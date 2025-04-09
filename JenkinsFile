@@ -1,0 +1,76 @@
+pipeline {
+    agent any
+
+    environments {
+        AWS_ACCESS_KEY_ID = 'your aws AWS_ACCESS_KEY_ID'
+        AWS_SECRET_ACCESS_KEY_ID = 'your AWS_SECRET_ACCESS_KEY_ID'
+        AWS_REGION = 'your AWS_REGION'
+        ENVIRONMENT = 'your environment'
+
+    }
+
+    stages {
+        stage (Git Checkout...) {
+            step {
+                'sh git clone https://my-repo.git'
+            }
+        }
+        stage (Terraform intializing...) {
+            step {
+                script {
+                    'sh terraform init'
+                }
+            }
+        }
+        stage (terraform planning...) {
+            step {
+                script {
+                    'sh terraform plan'
+                }
+            }
+        }
+        stage (terraform workspace create...) {
+            step {
+                script {
+                    'sh terraform workspace new my_workspace'
+                }
+            }
+        }
+        stage (terraform workspace select...) {
+            step {
+                script {
+                    'sh terraform workspace select my_workspace'
+                }
+            }
+        }
+        stage (terraform output planning...) {
+            step {
+                script {
+                    'sh  terraform output > tfoutput.json'
+                }
+            }
+        }        
+        stage (terraform applying...) {
+            step {
+                script {
+                    'sh terraform apply'
+                }
+            }
+        }
+    }
+    post {
+        anyway {
+            cleanws
+        }
+        success {
+            mail to: @gmail.com
+            subject: your pipeline {env.PIPELINE_URL} {env.PIPELINE_BUILD_NUMBER}
+            body: your build, test and deploy got successful!, you can refer your pipeline {env.PIPELINE_URL}
+        }
+        failure {
+            mail to: @gmail.com
+            subject: your pipeline {env.PIPELINE_URL} {env.PIPELINE_BUILD_NUMBER}
+            body: your build, test and deploy got failed!, you can refer your pipeline {env.PIPELINE_URL}
+        }
+    }
+}
